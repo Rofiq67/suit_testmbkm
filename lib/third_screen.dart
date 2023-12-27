@@ -15,8 +15,13 @@ class ThirdScreen extends StatefulWidget {
 class _ThirdScreenState extends State<ThirdScreen> {
   late List<User> listUser;
   Repository repository = Repository();
+  bool isLoading = false;
 
-  getData() async {
+  Future<void> refresh() async {
+    await getData();
+  }
+
+  Future<void> getData() async {
     try {
       final response = await repository.getData();
       if (response != null) {
@@ -75,111 +80,114 @@ class _ThirdScreenState extends State<ThirdScreen> {
                   )),
             ),
           )),
-      body: ListView.separated(
-        itemBuilder: (context, index) {
-          return Container(
-            height: 80,
-            width: double.maxFinite,
-            child: ElevatedButton(
-              onPressed: () async {
-                final selectedUser = await Navigator.push<User?>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SecondScreen(
-                      name: widget.name,
-                      selectedUser: listUser[index],
+      body: RefreshIndicator(
+        onRefresh: refresh,
+        child: ListView.separated(
+          itemBuilder: (context, index) {
+            return Container(
+              height: 80,
+              width: double.maxFinite,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final selectedUser = await Navigator.push<User?>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SecondScreen(
+                        name: widget.name,
+                        selectedUser: listUser[index],
+                      ),
                     ),
+                  );
+                  if (selectedUser != null) {
+                    Navigator.pop(context, selectedUser);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  surfaceTintColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                  backgroundColor: Colors.white,
+                  shadowColor: Colors.black.withOpacity(0.1),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                );
-                if (selectedUser != null) {
-                  Navigator.pop(context, selectedUser);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                surfaceTintColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-                backgroundColor: Colors.white,
-                shadowColor: Colors.black.withOpacity(0.1),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 49,
-                    height: 49,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: NetworkImage(listUser[index].avatar),
-                        fit: BoxFit.fill,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            listUser[index].firstName,
-                            style: const TextStyle(
-                              color: Color(0xFF04021D),
-                              fontSize: 16,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w500,
-                              height: 0,
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Text(
-                            listUser[index].lastName,
-                            style: const TextStyle(
-                              color: Color(0xFF04021D),
-                              fontSize: 16,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w500,
-                              height: 0,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      Text(
-                        listUser[index].email,
-                        style: const TextStyle(
-                          color: Color(0xFF686777),
-                          fontSize: 10,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w500,
-                          height: 0,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 49,
+                      height: 49,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: NetworkImage(listUser[index].avatar),
+                          fit: BoxFit.fill,
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              listUser[index].firstName,
+                              style: const TextStyle(
+                                color: Color(0xFF04021D),
+                                fontSize: 16,
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.w500,
+                                height: 0,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            Text(
+                              listUser[index].lastName,
+                              style: const TextStyle(
+                                color: Color(0xFF04021D),
+                                fontSize: 16,
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.w500,
+                                height: 0,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        Text(
+                          listUser[index].email,
+                          style: const TextStyle(
+                            color: Color(0xFF686777),
+                            fontSize: 10,
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w500,
+                            height: 0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-        separatorBuilder: (context, index) {
-          return const Divider();
-        },
-        itemCount: listUser.length,
+            );
+          },
+          separatorBuilder: (context, index) {
+            return const Divider();
+          },
+          itemCount: listUser.length,
+        ),
       ),
     );
   }
